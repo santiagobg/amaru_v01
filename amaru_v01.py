@@ -1427,7 +1427,7 @@ class ppxf_wavelet:
             hdr['F_units']=(units,'Flux units from spectrum')
         hdr['model']=(model_name,'Model fitted name software')
         #Software version
-        soft_v='ZAPDOS-PX-Fitting_v0.1'
+        soft_v='AMARU_v0.1.0'
         hdr['software']=(soft_v,'name of the code used')
 
         ###############
