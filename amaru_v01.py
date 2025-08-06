@@ -49,36 +49,36 @@
 ##################################################################################################################
 ##################################################################################################################
 #INPUT 
-######### Required parameters  ##########
+######### # Required parameters  ##########
 #     file_dir: Directory of the .fits archive. Must be an SDSS type .fits
 
-#     EMILES_Dir: Directory of the E-MILES stellar population templates. You can donwload them 
+#     EMILES_Dir: Directory of the E-MILES stellar population templates. You can download them 
 #                and more information from 
 #                https://research.iac.es/proyecto/miles/pages/spectral-energy-distributions-seds/e-miles.php
 #                and cite: UV-extended E-MILES stellar population models: young components in massive early-type 
 #                galaxies, Vazdekis, A.; Koleva, M.; Ricciardelli, E.; Röck, B.; Falcón-Barroso, J.
 #                2016MNRAS.463.3409V
 
-#     fe2_temps: Directory of the FeII templates. You can donwload them from
+#     fe2_temps: Directory of the FeII templates. You can download them from
 #                https://drive.google.com/drive/folders/1NT7dRKSnumhc1OxYtw0E8CDgrUYCr4aw?usp=sharing
 #                https://drive.google.com/drive/folders/1P_Vv3mBySidM5VtGugyPGwpNYOn2ZnN_?usp=sharing
 
-#     Balmer_tem: Directory of the FeII templates. You can donwload them from
+#     Balmer_tem: Directory of the FeII templates. You can download them from
 #                 https://drive.google.com/drive/folders/1DAn3gwDXhcptkG-Q7SwdAKkehuIFrxmj?usp=sharing
 #
-#NOTE: If the links are not working you can request them by email.
+#NOTE: If the links are not working, you can request them by email.
 
 ######### Optional parameters  ##########
-#     lwl and upl: are the lower and upper limits for the observed wavelentgh that is going to be used to
+#     lwl and upl: are the lower and upper limits for the observed wavelength that is going to be used to
 #                  produce the spectrum fit. Default values are lwl=3800 and upl=10400
 
-#     islope and fslope: are the lowerand upper limit values for the power-law set of templates. Default 
+#     islope and fslope: are the lower and upper limit values for the power-law set of templates. Default 
 #                        values are islope=-3 and fslope=0
 
 #     ivar_lim: limit value of the inverse variance from SDSS archive to make a mask. Values close to zero
 #               are pixels with large error. Default value is ivar_lim=0.005
 
-#     zz: Optional redshift value. It is used only when is provided and replace the redshift from the .fits
+#     zz: Optional redshift value. It is used only when it is provided and replaces the redshift from the .fits
 #         archive. Useful when the redshift is incorrect in the .fits archive
 
 #     st_func:  If st_func=0 use models with stellar templates, If st_func=1 use models without stellar templates
@@ -86,16 +86,16 @@
 
 #     str_op: When st_func=0; if str_op=0 uses all the templates in the EMILES_Dir. If str_op!=0, you need to 
 #             pass list_st=[array] as an array with the directories of the stellar populations or individual 
-#             templates that you whant to inclde in the model. Useful when to limit the number of stellar 
+#             templates that you want to include in the model. Useful when limiting the number of stellar 
 #             templates.
 
 #     model_name: Use this parameter if you want to start with a model different from the initial one suggested
 #                 The options are in the function <<model_constructor>>
 
-#     nnels_comp: If nnels_comp=1 all the Narrow Emission Lines (NELs) with the same velocity. If nnels_comp=2 
-#                divide the NELs in two set at the 6000A in observed wavelength, this allows to fit better the 
-#                NELs when there is error i the wavelength, which is observed in some cases. In general the
-#                resulting velocity of the two sets is the same or with a maximun diference of ~100km/s, but 
+#     nnels_comp: If nnels_comp=1, all the Narrow Emission Lines (NELs) have the same velocity. If nnels_comp=2 
+#                divide the NELs into two sets at the 6000A in observed wavelength, which allows for a better fit 
+#                of the NELs when there is an error in the wavelength, which is observed in some cases. In general the
+#                resulting velocity of the two sets is the same or with a maximum difference of ~100km/s, but 
 #                assuring a good fit of the NELs.
 
 #    my_plot_dir: directory where to save the plots
@@ -106,9 +106,9 @@
 
 #    devdf_dir: directory where to save the tables containing the number of deviations.
 
-#    save_op: If save_op=1 the results of the best-fit are saved in .fits archive
+#    save_op: If save_op=1, the results of the best-fit are saved in a .fits archive
 
-#    nsim: Number of the Monte Carlo simulations to constraint the errors. Recommended number is >=50. 
+#    nsim: Number of the Monte Carlo simulations to constrain the errors. Recommended number is >=50. 
 #          When nsim>0, nsim fits are performed using the best-fit + random error, each fit is
 #          saved in a .fits archive. 
 ##################################################################################################################
@@ -128,10 +128,10 @@ from astropy.table import Table
 import os
 import sys
 from scipy.stats import f
-### AMARU packeges
+### AMARU packages
 import noise_sim as nosim #Used for Monte Carlo Simulations
 from two_copm_fwhm_interpol import int_fwhm as fwhm_tc #Used to get the FWHM or velocity dispersion of a two component BELs
-from wavelet_decision import dwt_deviations,my_regions #Here the use of the DWT is implemented
+from wavelet_decision import dwt_deviations,my_regions #Here, the use of the DWT is implemented
 
 
 
@@ -518,12 +518,12 @@ class ppxf_wavelet:
             else:
                 print(f'WARNING: negative redshift {self.z}\n use the zz option to set a different redshift')
             
-        #For new templates uses a range (observed) where the SDSS data is not very noisy SB
-        # in the observed wavelength we are going to use lwl=3800 and upl=10400. This means 
-        # only a cut in the left part of the wavelength that is usually the one with less
-        # realible pixels. The right wavelength extreme is usually masked later by the 'ivar' mask
+        #For new templates, use a range (observed) where the SDSS data is not very noisy (SB)
+        # in the observed wavelength, we are going to use lwl=3800 and upl=10400. This means 
+        # only a cut in the left part of the wavelength that is usually the one with fewer
+        # reliable pixels. The right wavelength extreme is usually masked later by the 'ivar' mask
 
-        #Check for wavelengt small than 1200A
+        #Check for wavelength smaller than 1200A
 
         if lwl/(1+self.z)<1200:
             lwl=1200*(1+self.z)
@@ -598,7 +598,7 @@ class ppxf_wavelet:
         
         # Read the list of filenames from the Single Stellar Population library
         str_op_temps=0 #use any other number to use the option with particular stellar models, also use the list_st
-        #list_st=[]  #This maybe an array with the stellar population directories that you want to use
+        #list_st=[]  #This may be an array with the stellar population directories that you want to use
         if str_op_temps==0:
             vdk1=glob.glob(dir_temps)
             self.vazdekis=np.asarray(vdk1)
@@ -612,7 +612,7 @@ class ppxf_wavelet:
                 self.vazdekis=np.append(self.vazdekis,line_ta)
         self.vazdekis.sort()
         fwhm_tem =2.51 #2.51 #Use the same Vazdekis+10 spectra have a constant resolution FWHM of 2.51A.
-                        #Because I don't know the exact value and apparently is similar
+                        
     
         # Extract the wavelength range and logarithmically rebin one spectrum
         # to the same velocity scale of the SDSS galaxy spectrum, to determine
@@ -637,7 +637,7 @@ class ppxf_wavelet:
         #print(np.mean(ssp),np.mean(sspNew))
     
         # Interpolates the galaxy spectral resolution at the location of every pixel
-        # of the templates. Outside the range of the galaxy spectrum the resolution
+        # of the templates. Outside the range of the galaxy spectrum, the resolution
         # will be extrapolated, but this is irrelevant as those pixels cannot be
         # used in the fit anyway.
         fwhm_gal = np.interp(lam_temp, lam_gal, fwhm_gals)
@@ -652,7 +652,7 @@ class ppxf_wavelet:
         # instrumental spectral profiles are well approximated by Gaussians.
         #
         # In the line below, the fwhm_dif is set to zero when fwhm_gal < fwhm_tem.
-        # In principle it should never happen and a higher resolution template should be used.
+        # In principle, it should never happen, and a higher resolution template should be used.
         #
         fwhm_dif = np.sqrt((fwhm_gal**2 - fwhm_tem**2).clip(0))
         #fwhm_gal2=2.76
@@ -682,7 +682,7 @@ class ppxf_wavelet:
     def set_temp(self,dir_temps,lam_gal,velscale,fwhm_gals,str_op_temps,list_st):
         # Read the list of filenames from the Single Stellar Population library
         str_op_temps=0 #use any other number to use the option with particular stellar models, also use the list_st
-        #list_st=[]  #This maybe an array with the stellar population directories that you want to use
+        #list_st=[]  #This may be an array with the stellar population directories that you want to use
         if str_op_temps==0:
             vdk1=glob.glob(dir_temps)
             self.vazdekis=np.asarray(vdk1[0:1])
@@ -695,7 +695,7 @@ class ppxf_wavelet:
             self.vazdekis=np.append(self.vazdekis,line_ta)
         self.vazdekis.sort()
         fwhm_tem =2.51 #2.51 #Use the same Vazdekis+10 spectra have a constant resolution FWHM of 2.51A.
-                        #Because I don't know the exact value and apparently is similar
+                        
     
         # Extract the wavelength range and logarithmically rebin one spectrum
         # to the same velocity scale of the SDSS galaxy spectrum, to determine
@@ -819,7 +819,7 @@ class ppxf_wavelet:
             ssbc1=ssp[:,1]
             lam_bc1=ssp[:,0]
             deltbc=lam_bc1[1]-lam_bc1[0]
-            #add zeros or cut to work with the same wavelenght as the masked stellar templates
+            #add zeros or cut to work with the same wavelength as the masked stellar templates
             if lam_bc1[0]>lamRange_temp[0]:
                 wzle=np.arange(-lam_bc1[0],-lamRange_temp[0],deltbc)
                 fzle=wzle*0
@@ -899,8 +899,8 @@ class ppxf_wavelet:
         '''
 
         print('construction of: '+model_name)
-        # Define the initial values for all the posible components
-        #You can manipulate this input values to improve the fit
+        # Define the initial values for all the possible components
+        #You can manipulate these input values to improve the fit
         vel=0
         start_s = [vel, 10.,0.,0.] # (km/s), starting guess for [V,sigma] stellar
         start_g1 = [vel, 100.] # (km/s), starting guess for [V,sigma] Gas narrow left
@@ -913,14 +913,14 @@ class ppxf_wavelet:
 
         if vel_o3 is not None and\
         (model_name=='model_st_3' or model_name=='model_st_4' or model_name=='model_nst_3' or model_name=='model_nst_4'):
-            #if o3gc==1: #commented, before used to indicated in which component the [OIII] line was
+            
             #Use the same initial values for both NELs components
             
             start_g1 = [vel_o3, 90.] # (km/s), starting guess for [V,sigma] Gas narrow left
         #else:
             start_g2 = [vel_o3, 90.] # (km/s), starting guess for [V,sigma] Gas narrow right
 
-        #Define bouns for kinematic vals for each component
+        #Define bounds for kinematic vals for each component
         ##########BOUNDS: Use this to limit the kinematic values 
         #vel stars
         v1=-300 #-300
@@ -967,7 +967,7 @@ class ppxf_wavelet:
         #(AGN)
         #agnbn=[[-500,500],[1,100]]#-+100; 1-10
         agnbn=[[-100,100],[1,10]]#-+100; 1-10
-        ############tied option to tied the Broad emission lines and the Balmer High order velocity########################
+        ############tied option to tie the Broad emission lines and the Balmer High order velocity########################
         tied_ssp=['','','','']
         tied_nel1=['','']
         tied_nel2=['','']
@@ -1276,7 +1276,7 @@ class ppxf_wavelet:
         else:
             nwinds2=0
        # print(nBlines2,nwinds2)    
-        #define arrays to loop an extract the compoents
+        #define arrays to loop and extract the components
         nValues=[nLines1,nLines2,nBlines,nBlines2,nwinds2,nBc,nFe,nAgns]
         comp_name=['gas_narrow_1f','gas_narrow_2f','gas_broad_1f','gas_broad_2f','winds_f','Bal_cont_f','fe2_f','agn_f']
         comp_vals={}
@@ -1305,7 +1305,7 @@ class ppxf_wavelet:
             gs = gridspec.GridSpec(5, 2)
             lgs=4
 
-        #Plot all spectrum
+        #Plot all spectra components
         plt.subplot(gs[lgs-2:lgs,:])
         plt.plot(lam_gal,pp.galaxy,label='spectrum')
         plt.plot(lam_gal,pp.bestfit,label='best-fit')
@@ -1432,7 +1432,7 @@ class ppxf_wavelet:
 
         ###############
         # Arrays with components: Here the flux units are flux/median(flux)
-        #Consider thet differen models have different components
+        #Consider that different models have different components
         #Components extraction
         if model_name in np.array(['model_st_2','model_st_4','model_nst_2','model_nst_4']):
             nBlines2=nBlines
@@ -1443,7 +1443,7 @@ class ppxf_wavelet:
         else:
             nwinds2=0
        # print(nBlines2,nwinds2)    
-        #define arrays to loop an extract the compoents
+        #define arrays to loop and extract the components
         nValues=[nLines1,nLines2,nBlines,nBlines2,nwinds2,nBc,nFe,nAgns]
         comp_name=['gas_narrow_1f','gas_narrow_2f','gas_broad_1f','gas_broad_2f','winds_f','Bal_cont_f','fe2_f','agn_f']
         comp_vals={}
@@ -1531,7 +1531,7 @@ class ppxf_wavelet:
                     mnh4=np.append(mnh4,0.0)
 
             #Add the two broad components to get the FWHM of the composition:
-            #Look for a BEL with weight>0 in herarchical order
+            #Look for a BEL with weight>0 in hierarchical order
             bels_h_names=['Hbeta','Halpha','MgIId','CIVd'] 
             for belsn in bels_h_names:
                 try:
@@ -1633,7 +1633,7 @@ class ppxf_wavelet:
                     mnh4=np.append(mnh4,0.0)
 
             #Add the two broad components to get the FWHM of the composition:
-            #Look for a BEL with weight>0 in herarchical order
+            #Look for a BEL with weight>0 in hierarchical order
             bels_h_names=['Hbeta','Halpha','MgIId','CIVd'] 
             for belsn in bels_h_names:
                 try:
@@ -1804,7 +1804,7 @@ class ppxf_wavelet:
             
 
 
-        #Transform all tablest to a BinTableHDU
+        #Transform all tables to a BinTableHDU
         t111=fits.BinTableHDU(tcomp)
         t112=fits.BinTableHDU(tkr)
         t113=fits.BinTableHDU(tst)
@@ -1815,7 +1815,7 @@ class ppxf_wavelet:
         hdutt=fits.HDUList([hdu,t111,t112,t113,t114,t115,t116,t117])
 
         ########Name of fits archival
-        #file_name fro SDSS-V spec or fit-spec from SDSS-V
+        #file_name for SDSS-V spec or fit-spec from SDSS-V
         
         if fit_type is not None:
             nm1=fit_type+'-'+n2[0]
