@@ -135,7 +135,7 @@ from wavelet_decision import dwt_deviations,my_regions #Here, the use of the DWT
 
 
 
-class ppxf_wavelet:
+class amaru:
 
 
     def __init__(self,file_dir, lwl=3800,upl=10400,islope=-3,fslope=0,str_op=0,ivar_lim=0.005,
