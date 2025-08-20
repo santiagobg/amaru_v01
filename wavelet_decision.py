@@ -52,7 +52,7 @@ import traceback
 import matplotlib.gridspec as gridspec
 pd.set_option('future.no_silent_downcasting', True)
 
-def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbestfit,level=4,threshold_ps=1,plot_dev=0):
+def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbestfit,level=4,threshold_ps=1.75,plot_dev=0):
     '''
     -residuals: spectrum - best-fit, residuals of the fitting
     - wave: rest-frame wavelength array with the pixels values, same length than residuals
@@ -124,8 +124,8 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
     
     # Define a threshold for significant deviations in the power spectrum
     # This can be based on a percentage of the maximum power or a fixed value
-    #threshold_v = threshold_ps #* max([max(power) for power in power_spectrum])  
-    threshold_v = 1.75 #Default selected in the publication .........
+    threshold_v = threshold_ps #* max([max(power) for power in power_spectrum])  
+    #threshold_v = 1.75 #Default selected in the publication .........
     # Create a dictionary to store significant deviations for each level
     significant_deviations = {}
     
