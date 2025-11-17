@@ -50,14 +50,18 @@ from astropy.io import fits
 import os,sys
 import traceback
 import matplotlib.gridspec as gridspec
+from collections import Counter
 pd.set_option('future.no_silent_downcasting', True)
-
-def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbestfit,level=4,threshold_ps=1.75,plot_dev=0):
+#Valor a tabular for th x0.75x,x1.00x,x1.25x,x1.50x,x1.75x,x2.00x,x2.25x,2.50
+def dwt_deviations(devdf_dit,my_residuals,z,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbestfit,fit_mask,level=4,threshold_ps=3.50,plot_dev=0):
     '''
+    -devdf_dit: directory to save the deviations dataframe
     -residuals: spectrum - best-fit, residuals of the fitting
+    -z: redshift
     - wave: rest-frame wavelength array with the pixels values, same length than residuals
     - ppsol: solution array from pPXF ususally pp.sol (pp=ppxf(params*)), it contains the 
              kinematic moments (velocity, velocity dispersion, h3, h4) [km/s]
+    - fit_mask: mask used to fit the spectrum
     - level: Decomposition level (must be >=4) for wavelet coefficients calculation. The algorithm use 4 levels
     - threshold_ps: factor for the threshold of high values in the power spectrum of the wavelet decomposition
                     the threshold is defined as:
@@ -67,8 +71,8 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
     '''
 #################################################################################
     #regions of interest to extract properties from the spectra for AGNs
-    vel_disp_bels=2000 #in km/s estimated for BEL regions
-    vel_disp_nels=300 #in km/s NELs upper lim for regions
+    vel_disp_bels=2000 #in km/s estimated for BEL regions #Valor a tabular
+    vel_disp_nels=300 #in km/s NELs upper lim for regions #Valor a tabular
     c=299792.458 #in Km/s
     #Halpha
     Ha_lc=6565
@@ -95,22 +99,41 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
     reg_winds=[WO3_ll,WO3_ul]
     #MgII
     Mg2_lc=2799
-    fMg2=3*Mg2_lc*vel_disp_bels/c #wavelength width of 3 vel_disp
+    if z>1:
+        fMg2=3.5*Mg2_lc*vel_disp_bels/c #wavelength width of 3.5 vel_disp
+    else:
+        fMg2=3*Mg2_lc*vel_disp_bels/c #wavelength width of 3 vel_disp
     Mg2_ll=Mg2_lc-fMg2
     Mg2_ul=Mg2_lc+fMg2
     Mg_reg=[Mg2_ll,Mg2_ul]
     #CIV
     C4_lc=1550
-    fC4=3*C4_lc*vel_disp_bels/c #wavelength width of 3 vel_disp
+    if z>1:
+        fC4=3.5*C4_lc*vel_disp_bels/c #wavelength width of 3 vel_disp
+    else:
+        fC4=3*C4_lc*vel_disp_bels/c #wavelength width of 3 vel_disp
     C4_ll=C4_lc-fC4
     C4_ul=C4_lc+fC4
     C4_reg=[C4_ll,C4_ul]
-    ##
+    ## For MgII and CIV larger regions are considered because of absorptions and outflows
+    
+    
     #Regions
     regions_lam=[Ha_lc,O3_lc,WO3_ul,Hb_lc,Mg2_lc,C4_lc]
     regions=[Ha_reg,O3_reg,reg_winds,Hb_reg,Mg_reg,C4_reg]
     regions_name=['Halpha','OIII','Wind_OIII','Hbeta','MgII','CIV']
 
+
+
+#################################################################################
+#####################Prepare the signal (residuals)##############################
+#Use the fit_mask to avoid masked pixels for the analysis
+    #print('Into residuals filling')
+    residuals=my_residuals.copy()
+    #To fill the masked pixels with the std value or a fraction of it
+    fill_val=np.std(residuals[fit_mask])
+    residuals[~fit_mask]=0.5*fill_val #Tabular_val
+    #print('Finished residuals filling')
 #################################################################################
 #################################################################################
 # Perform DWT using Haar wavelet
@@ -140,7 +163,7 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
 #################################################################################
 #Save deviation in a DF
     #Find regions in the rest-frame wavelength range of the spectrum
-    mask_reg=np.array((regions_lam>wvm[0]+50) & (regions_lam<wvm[-1]-50))
+    mask_reg=np.array((regions_lam>wvm[0]+50) & (regions_lam<wvm[-1]-50)) #Valor a tabular
     regions=np.array(regions)
     regions2=regions[mask_reg]
     regions_name=np.array(regions_name)
@@ -170,7 +193,7 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
         deviations_df = df.pivot_table(index='level', columns='element', aggfunc='size', fill_value=0)
         
         # Ensure columns include all elements
-        deviations_df = deviations_df.reindex(range(5),columns=regions_name2, fill_value=0)
+        deviations_df = deviations_df.reindex(range(5),columns=regions_name2, fill_value=0) #Change_by_len
 
     deviations_df.to_csv(devdf_dit,index=False)
 #################################################################################
@@ -181,9 +204,10 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
     
     # from deviations - broad
     br_dev_f=0
-    wo3_dev_flag=0 #for winds 
+    # #####for winds 
+    wo3_dev_flag=0 
     
-    for i in range(3): #to consider levels 0,1,2 
+    for i in range(3): #to consider levels 0,1,2 #Tabular_valcalcular
         if 'Wind_OIII' in regions_name2:        
             if deviations_df[['Wind_OIII']].iloc[i].values[0]>0: #Consider only "Wind" region in OIII
                 wo3_dev_flag+=1
@@ -199,11 +223,11 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
             if sum_dev>0:
                 num_reg_dev+=1
     #For just one region with deviations
-    sig_one_reg=-999
+    sig_one_reg=np.nan
     #Flags
     if num_reg_dev>1:  # Condition to detect deviations in at leas 2 regions          
         broad_dev_flags=1
-        for i in range(3): #to consider levels 0,1 and 2
+        for i in range(3): #to consider levels 0,1 and 2 #Tabular_val_calcular
             for r in regions_name2:
                 if deviations_df[[r]].iloc[i].values[0]>0 and r!='OIII' and r!='Wind_OIII': #Consider only BELs
                     br_dev_f+=1
@@ -222,7 +246,7 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
                 significance_rr=np.absolute(flux_rr_res)/std_flux #residual flux significance
                 print(f'region {rns} with residual significance {significance_rr}')
                 
-                if significance_rr>10: #10 is a conserative value
+                if significance_rr>10: #10 is a conserative value #Valor a tabular
                     comment_wavelet=comment_wavelet+' region '+str(rns)+' with res-sig '+str(round(significance_rr,2))
                     sig_one_reg=round(significance_rr,2)
                     broad_dev_flags=1
@@ -242,7 +266,7 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
     nr_dev_flag=0
     o3n_dev_flag=0
     
-    for i in range(2,5): #to consider levels 2,3,4
+    for i in range(2,5): #to consider levels 2,3,4 #Tabular_val_calculated
         for r in regions_name2:
             if deviations_df[[r]].iloc[i].values[0]>0 and r!='Wind_OIII':
                 nr_dev_flag+=1
@@ -273,11 +297,11 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
 #################################################################################
 #Decision
     #For broad regions:
-    case_bels=0 #To save wich case is the one indicating the 2BELs model
+    case_bels=0 #To save which case is the one indicating the 2BELs model
     #- Check if h3 and h4 moments are large
     h3_f=ppsol[idx_belm][2]  #index are from the model used to fit, related with the components indexing
-    h4_f=ppsol[idx_belm][3]  #first index 3 is coming from the model where the BELs are in the index 3 of the model
-    if (np.abs(h3_f)>0.05 and np.abs(h4_f)>0.04) or (np.abs(h4_f)>0.05 and np.abs(h3_f)>0.04):
+    h4_f=ppsol[idx_belm][3]  #
+    if (np.abs(h3_f)>0.05 and np.abs(h4_f)>0.04) or (np.abs(h4_f)>0.05 and np.abs(h3_f)>0.04): #Valor a tabular #Tabular_val
         ng_mom_flag=1
     else:
         ng_mom_flag=0
@@ -287,9 +311,9 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
         case_bels=1
         #print('Broad deviations case1')
     #For deviations in a BEL region o BEL regions, considering that 3 or more deviations in one region can 
-    #indicate a problem and in that way, later the comparison between the fit with the new model can determine
+    #indicate a problem, later the comparison between the fit with the new model can determine
     #which is better
-    elif br_dev_f>=4:                  
+    elif br_dev_f>=4:      #Tabular_val_calculated            
         add_2bels=1
         #For checking the case of 2BELs decision
         if num_reg_dev>1:
@@ -304,16 +328,16 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
     if 'Wind_OIII' in regions_name2:
     #using the flux significance and deviations to avoid small narrow deviations mixed with residuals
      # significance, recomended 3 but winds could be small in residuals because of NELS, then using sig>2
-        if significance_wo3>2.5 and wo3_dev_flag>0: 
+        if significance_wo3>2.5 and wo3_dev_flag>0: #Valor a tabular #Tabular_val
             add_wind=1
             case_winds=1
-        elif (ppsol[idx_o3m][1]>=300 and wo3_dev_flag>=0):
+        elif (ppsol[idx_o3m][1]>=300 and wo3_dev_flag>=0): #Valor a tabular #Tabular_val
             # new condition of vel_disp for NEL-templates that fit the wind and not the NELs in [OIII]
             #Note that the limit of vel disp in the model is 400km/s but 300km/s can mimic NELs+Winds(low vel)
             #Again the index 1 in ppsol comes from the indexing of templates for pPXF fitting
             add_wind=1
             case_winds=2
-        elif (ppsol[idx_o3m][1]>=300 and significance_wo3>2.5): 
+        elif (ppsol[idx_o3m][1]>=300 and significance_wo3>2.5): #Valor a tabular #Tabular_val_calculated
             add_wind=1
             case_winds=3
         else:
@@ -343,7 +367,7 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
         max_bstf_idx=list(bsft_o3).index(max(bsft_o3))
         c = 299792.458
         dv_nr = np.log(wv_o3n[max_gal_idx]/wv_o3n[max_bstf_idx])*c
-        if  np.absolute(dv_nr)>100:
+        if  np.absolute(dv_nr)>100: #Valor a tabular #Tabular_val
             new_inti_vel_narrow=ppsol[idx_o3m][0]+dv_nr
             
             print(f'new init vel for NELs from {ppsol[idx_o3m]}')
@@ -372,7 +396,7 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
                 std_residuals=np.std(residuals_rr)
                 std_flux=std_residuals*np.sqrt(len(residuals_rr))*(wv_rr[1]-wv_rr[0]) #Uncertanty in the integrated residual flux
                 significance_rr=np.absolute(flux_rr_res)/std_flux #residual flux significance     
-                if significance_rr>2.5:
+                if significance_rr>2.5: #Valor a tabular
                     print(f'Check region {rns} with residual significance {significance_rr}')
                     comment_wavelet=comment_wavelet+' Check region'+str(rns)
 
@@ -396,7 +420,7 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
     #####
     rgsn1=devdf_dit.split(sep='idf-')
     #Used to save the deviations DataFrame
-    #sig_regs.to_csv('../verification/res_sig_th1_175_22/res_sig-'+rgsn1[-1],index=False)
+    sig_regs.to_csv('../residuals_significance/res_sig-'+rgsn1[-1],index=False)
 #################################################################################
 #################################################################################
     if plot_dev==1:
@@ -425,10 +449,13 @@ def dwt_deviations(devdf_dit,residuals,wave,ppsol,idx_o3m,idx_belm,ppgalaxy,ppbe
         
     plt.close('all')
 #################################################################################
+
+#################################################################################
 #################################################################################
 
 #Returning decision and initial vel recomendation
-    return models_add[new_model_index],flag_vel_o3, new_inti_vel_narrow, comment_wavelet,sig_one_reg,significance_wo3,dv_nr,case_winds,case_bels
+    return models_add[new_model_index],flag_vel_o3, new_inti_vel_narrow, comment_wavelet,sig_one_reg,significance_wo3,dv_nr,\
+            case_winds,case_bels
     
 
 #################################################################################
