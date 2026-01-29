@@ -16,7 +16,7 @@ This is the first version of the code used in the publication (Bernal at al., 20
 We suggest contacting the developers and requesting the new version of AMARU (expectedto be public
 in a few months)
 
-Notes about templates
+# Notes about templates:
 For stellar, FeII, Balmer High Order, and Balmer Continuum, you need to download  
 them from the repositories provided in the code.
 Repositories:
