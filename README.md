@@ -14,7 +14,7 @@ PyWavelets 1.8.0
 # Notes about versions:
 This is the first version of the code used in the publication (Bernal at al., 2026 A&A)
 We suggest contacting the developers and requesting the new version of AMARU (expectedto be public
-in a few months)
+in a few months) [e-mail: sbernal@das.uchile.cl]
 
 # Notes about templates:
 For stellar, FeII, Balmer High Order, and Balmer Continuum, you need to download  
