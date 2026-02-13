@@ -2,7 +2,7 @@
 #A.M.A.R.U. – "Automatic Multiscale Analysis for Recommendation of AGN Models"
 #Santiago A. Bernal G. August 2025----- AMARU version 0.2.0
 #This version was an update of the first algorithm and is used
-# in the publication of the article DOI:
+# in the publication of the article: Automated model selection for the spectral fitting of large samples of active galactic nucleus spectra
 #ADS: 
 ###############################################
 #     █████╗ ███╗   ███╗ █████╗ ██████╗ ██╗   ██╗
@@ -37,7 +37,8 @@
     If you have found this software useful for your research,
     I would appreciate if you cite:
 
-    https://ui.adsabs.harvard.edu/abs/2025......
+    Title: Automated model selection for the spectral fitting of large samples of active galactic nucleus spectra
+    
 
     This software is provided as is without any warranty whatsoever.
     Permission to use, for non-commercial purposes is granted.
@@ -124,7 +125,7 @@ import glob,timeit
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from ppxf import ppxf 
-import ppxf_util_al_lab_wv as util
+import ppxf_util_al_lab_wv as util #modified and provided
 from astropy.table import Table
 import os
 import sys
@@ -227,7 +228,14 @@ class amaru:
         print('using: '+model_name)
         start_time = timeit.default_timer() #start time to check
          #-----------
-        self.pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
+        try:
+            self.pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
+              plot=False, moments=self.moments, degree=-1, mdegree=-1,mask=self.iv_mask,
+              vsyst=self.dv, clean=True, component=self.component, bounds=self.bounds,tied=self.tied,
+              bias=0,quiet=True)
+        except:
+            time.sleep(1)
+            self.pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
               plot=False, moments=self.moments, degree=-1, mdegree=-1,mask=self.iv_mask,
               vsyst=self.dv, clean=True, component=self.component, bounds=self.bounds,tied=self.tied,
               bias=0,quiet=True)
@@ -284,7 +292,7 @@ class amaru:
         self.sig_one_reg,self.wo3_sig,self.dv_nr,self.case_winds,self.case_bels=dwt_deviations(self.devdf_dir,self.residuals,
                                                                                 self.z,self.lam_gal,self.pp.sol,self.idx_o3,
                                                                                  self.idx_bels,self.pp.galaxy,self.pp.bestfit,
-                                                                                 self.iv_mask,level=4,threshold_ps=2.5,plot_dev=1)
+                                                                                 self.iv_mask,level=4,threshold_ps=1.25,plot_dev=1)
         
         end_time = timeit.default_timer()  #end time to check
         #print('DWT finished')
@@ -328,7 +336,14 @@ class amaru:
 
                 #-----------#########
                     
-                self.pp2 = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
+                try:
+                    self.pp2 = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
+                      plot=False, moments=self.moments, degree=-1, mdegree=-1,mask=self.iv_mask,
+                      vsyst=self.dv, clean=True, component=self.component, bounds=self.bounds,tied=self.tied,
+                      bias=0,quiet=True)
+                except:
+                    time.sleep(1)
+                    self.pp2 = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
                       plot=False, moments=self.moments, degree=-1, mdegree=-1,mask=self.iv_mask,
                       vsyst=self.dv, clean=True, component=self.component, bounds=self.bounds,tied=self.tied,
                       bias=0,quiet=True)
@@ -401,10 +416,18 @@ class amaru:
             ###############pPXF running ##############
             start_time = timeit.default_timer() #start time to check
             
-            self.pp2 = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
+            try:
+                self.pp2 = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
                       plot=False, moments=self.moments, degree=-1, mdegree=-1,mask=self.iv_mask,
                       vsyst=self.dv, clean=True, component=self.component, bounds=self.bounds,tied=self.tied,
                       bias=0,quiet=True)
+            except:
+                time.sleep(1)
+                self.pp2 = ppxf(self.templates, self.galaxy, self.noise, self.velscale, self.start,
+                      plot=False, moments=self.moments, degree=-1, mdegree=-1,mask=self.iv_mask,
+                      vsyst=self.dv, clean=True, component=self.component, bounds=self.bounds,tied=self.tied,
+                      bias=0,quiet=True)
+                
             self.chi22=self.pp2.chi2
             
             end_time = timeit.default_timer()  #end time to check
@@ -515,12 +538,19 @@ class amaru:
                     self.scale_fact_sim=np.median(flux_sim)
                     galaxy_sim=flux_sim/self.scale_fact_sim
                     # run pPXF
-                    self.pp_sim = ppxf(self.templates, galaxy_sim, self.noise, self.velscale, self.start,
+                    try:
+                        self.pp_sim = ppxf(self.templates, galaxy_sim, self.noise, self.velscale, self.start,
+                      plot=False, moments=self.moments, degree=-1, mdegree=-1,mask=self.iv_mask,
+                      vsyst=self.dv, clean=True, component=self.component, bounds=self.bounds,tied=self.tied,
+                      bias=0,quiet=True)
+                    except:
+                        time.sleep(1)
+                        self.pp_sim = ppxf(self.templates, galaxy_sim, self.noise, self.velscale, self.start,
                       plot=False, moments=self.moments, degree=-1, mdegree=-1,mask=self.iv_mask,
                       vsyst=self.dv, clean=True, component=self.component, bounds=self.bounds,tied=self.tied,
                       bias=0,quiet=True)
                     #Save the simulation
-                    self.fits_constructor(file_dir,self.z,self.scale_factor_sim,self.best_model,self.pp_sim,self.ivar,self.lam_gal,self.wdisp,
+                    self.fits_constructor(file_dir,self.z,self.scale_fact_sim,self.best_model,self.pp_sim,self.ivar,self.lam_gal,self.wdisp,
                               self.vazdekis,self.nTemps,
                               self.line_names1, self.line_wave1,self.nLines1,self.line_names2,self.line_wave2,self.nLines2,
                               self.Bline_names, self.Bline_wave,self.nBlines,
@@ -599,7 +629,7 @@ class amaru:
             flux_dered=flux
         
         self.scale_factor =  np.median(flux_dered)
-        print('SCLFACT',self.scale_factor)
+       # print('SCLFACT',self.scale_factor)
         self.galaxy = flux/np.median(flux_dered)   # Normalize spectrum to avoid numerical issues
     
         ######MASK using the ivar
@@ -986,12 +1016,12 @@ class amaru:
         (model_name=='model_st_3' or model_name=='model_st_4' or model_name=='model_nst_3' or model_name=='model_nst_4'):
             #if o3gc==1: #commented, before used to indicated in which component the [OIII] line was
             #Use the same initial values for both NELs components
-            print(vel_o3)
+           # print(vel_o3)
             start_g1 = [vel_o3, 90.] # (km/s), starting guess for [V,sigma] Gas narrow left
         #else:
             start_g2 = [vel_o3, 90.] # (km/s), starting guess for [V,sigma] Gas narrow right
-        print('INT VEL NELs')
-        print(start_g1,start_g2)
+       # print('INT VEL NELs')
+       # print(start_g1,start_g2)
         #Define bouns for kinematic vals for each component
         ##########BOUNDS: Use this to limit the kinematic values 
         #vel stars
@@ -1143,11 +1173,11 @@ class amaru:
                     #broad lines
                     bbn=[[vbg1,vbg2],[vdb1,vdb2],[-0.1,0.1],[-0.1,0.1]] #h3:symmetry  h4:shape
                     start_gb = [bel_vel-100, 1000.,0.,0.] # (km/s), starting guess for [V,sigma] Broad lines
-                    start_gb1 = [bel_vel+100, 1000.,0.,0.] # (km/s), starting guess for [V,sigma] Broad lines
+                    start_gb = [bel_vel+100, 1000.,0.,0.] # (km/s), starting guess for [V,sigma] Broad lines
                     
 
                 
-                self.start= [start_s, start_g1,start_g2,start_gb,start_gb1,start_bc,start_fe,agn_start]
+                self.start= [start_s, start_g1,start_g2,start_gb,start_gb,start_bc,start_fe,agn_start]
                 self.bounds=[sbn,nbn,nbn,bbn,bbn,bcbn,febn,agnbn]
                 tied_nel2=['','p[5]']
                 tied_bc=['p[8]','']
@@ -1185,9 +1215,9 @@ class amaru:
                     #broad lines
                     bbn=[[vbg1,vbg2],[vdb1,vdb2],[-0.1,0.1],[-0.1,0.1]] #h3:symmetry  h4:shape
                     start_gb = [bel_vel-100, 1000.,0.,0.] # (km/s), starting guess for [V,sigma] Broad lines
-                    start_gb1 = [bel_vel+100, 1000.,0.,0.] # (km/s), starting guess for [V,sigma] Broad lines
+                    start_gb = [bel_vel+100, 1000.,0.,0.] # (km/s), starting guess for [V,sigma] Broad lines
 
-                self.start= [start_s, start_g1,start_g2,start_gb,start_gb1,start_wn,start_bc,start_fe,agn_start]
+                self.start= [start_s, start_g1,start_g2,start_gb,start_gb,start_wn,start_bc,start_fe,agn_start]
                 self.bounds=[sbn,nbn,nbn,bbn,bbn,wbn,bcbn,febn,agnbn]
                 tied_nel2=['','p[5]']
                 tied_bc=['p[8]','']
@@ -1642,7 +1672,7 @@ class amaru:
         if len(n1)==1:
             n1=file_dir.split(sep='/') #Consider other cases
 
-        n2=n1[-1].split(sep='.')
+        n2=n1[-1].split(sep='.fit')
         if fit_type is not None:
             nm=fit_type+'-'+n2[0]
         else:
@@ -1844,14 +1874,14 @@ class amaru:
                 bels_civ_names=['CIV1548','CIV1550'] 
                 #print(bels_civ_names)
                 for belcn in bels_civ_names:
-                    print('into loop')
-                    print(Cline_names)
+                   # print('into loop')
+                   # print(Cline_names)
                     try:
                         indx_broadC11=np.where(Cline_names==belcn)
                         indx_broadC1=indx_broadC11[0][0]
                         wb1=pp.weights[nTemps+nLines1+nLines2+2*nBlines+indx_broadC1]
                         wb2=pp.weights[nTemps+nLines1+nLines2+2*nBlines+nClines+indx_broadC1]
-                        print('Civ',wb1,wb2)
+                      #  print('Civ',wb1,wb2)
                     except:
                         continue
     
@@ -2258,7 +2288,7 @@ class amaru:
         if fit_type=='sim':
             save_dir_sim=save_dir.split(sep=nm1)
             save_dir=save_dir_sim[0]+n2[0]+'/'
-            print(save_dir)
+           # print(save_dir)
             if os.path.exists(save_dir):
                 sim_fls=glob.glob(save_dir+'sim*.fits')
                 sim_number=len(sim_fls)+1
