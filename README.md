@@ -1,4 +1,4 @@
-# amaru_v01
+# AMARU_v01
 Automatic Multiscale Analysis for Recommendation of AGN Models
 
 
@@ -13,7 +13,7 @@ PyWavelets 1.8.0
 
 # Notes about versions:
 This is the first version of the code used in the publication (Bernal at al., 2026 A&A)
-We suggest contacting the developers and requesting the new version of AMARU (expectedto be public
+We suggest contacting the developers and requesting the new version of AMARU (expected to be public
 in a few months) [e-mail: sbernal@das.uchile.cl]
 
 # Notes about templates:
