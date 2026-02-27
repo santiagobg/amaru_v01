@@ -124,7 +124,8 @@ import numpy as np
 import glob,timeit
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from ppxf import ppxf 
+#from ppxf import ppxf 
+from ppxf.ppxf import ppxf #if installed
 import ppxf_util_al_lab_wv as util #modified and provided
 from astropy.table import Table
 import os
